@@ -1,101 +1,236 @@
-import Image from "next/image";
+"use client"
 
-export default function Home() {
+import { useState } from "react"
+import { PlusCircle, Pencil, Trash2 } from 'lucide-react'
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog"
+import { Label } from "@/components/ui/label"
+
+interface Employee {
+  id: number
+  name: string
+  position: string
+  salary: number
+}
+
+export default function Component() {
+  const [employees, setEmployees] = useState<Employee[]>([
+    { id: 1, name: "Juan Pérez", position: "Desarrollador", salary: 50000 },
+    { id: 2, name: "María García", position: "Diseñadora", salary: 45000 },
+    { id: 3, name: "Carlos Rodríguez", position: "Gerente", salary: 60000 },
+  ])
+
+  const [newEmployee, setNewEmployee] = useState<Omit<Employee, "id">>({
+    name: "",
+    position: "",
+    salary: 0,
+  })
+
+  const [editingEmployee, setEditingEmployee] = useState<Employee | null>(null)
+
+  const addEmployee = () => {
+    setEmployees([...employees, { ...newEmployee, id: Date.now() }])
+    setNewEmployee({ name: "", position: "", salary: 0 })
+  }
+
+  const updateEmployee = () => {
+    if (editingEmployee) {
+      setEmployees(
+        employees.map((emp) =>
+          emp.id === editingEmployee.id ? editingEmployee : emp
+        )
+      )
+      setEditingEmployee(null)
+    }
+  }
+
+  const deleteEmployee = (id: number) => {
+    setEmployees(employees.filter((emp) => emp.id !== id))
+  }
+
   return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
-
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
-        </div>
-      </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+    <div className="container mx-auto p-4">
+      <h1 className="text-2xl font-bold mb-4">Sistema de Planilla</h1>
+      <div className="mb-4">
+        <Dialog>
+          <DialogTrigger asChild>
+            <Button>
+              <PlusCircle className="mr-2 h-4 w-4" />
+              Agregar Empleado
+            </Button>
+          </DialogTrigger>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Agregar Nuevo Empleado</DialogTitle>
+            </DialogHeader>
+            <div className="grid gap-4 py-4">
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="name" className="text-right">
+                  Nombre
+                </Label>
+                <Input
+                  id="name"
+                  value={newEmployee.name}
+                  onChange={(e) =>
+                    setNewEmployee({ ...newEmployee, name: e.target.value })
+                  }
+                  className="col-span-3"
+                />
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="position" className="text-right">
+                  Posición
+                </Label>
+                <Input
+                  id="position"
+                  value={newEmployee.position}
+                  onChange={(e) =>
+                    setNewEmployee({ ...newEmployee, position: e.target.value })
+                  }
+                  className="col-span-3"
+                />
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="salary" className="text-right">
+                  Salario
+                </Label>
+                <Input
+                  id="salary"
+                  type="number"
+                  value={newEmployee.salary}
+                  onChange={(e) =>
+                    setNewEmployee({
+                      ...newEmployee,
+                      salary: Number(e.target.value),
+                    })
+                  }
+                  className="col-span-3"
+                />
+              </div>
+            </div>
+            <Button onClick={addEmployee}>Agregar Empleado</Button>
+          </DialogContent>
+        </Dialog>
+      </div>
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead>Nombre</TableHead>
+            <TableHead>Posición</TableHead>
+            <TableHead>Salario</TableHead>
+            <TableHead>Acciones</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {employees.map((employee) => (
+            <TableRow key={employee.id}>
+              <TableCell>{employee.name}</TableCell>
+              <TableCell>{employee.position}</TableCell>
+              <TableCell>${employee.salary.toLocaleString()}</TableCell>
+              <TableCell>
+                <Dialog>
+                  <DialogTrigger asChild>
+                    <Button variant="outline" size="icon" className="mr-2">
+                      <Pencil className="h-4 w-4" />
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>Editar Empleado</DialogTitle>
+                    </DialogHeader>
+                    <div className="grid gap-4 py-4">
+                      <div className="grid grid-cols-4 items-center gap-4">
+                        <Label htmlFor="edit-name" className="text-right">
+                          Nombre
+                        </Label>
+                        <Input
+                          id="edit-name"
+                          value={editingEmployee?.name || ""}
+                          onChange={(e) =>
+                            setEditingEmployee(
+                              editingEmployee
+                                ? {
+                                    ...editingEmployee,
+                                    name: e.target.value,
+                                  }
+                                : null
+                            )
+                          }
+                          className="col-span-3"
+                        />
+                      </div>
+                      <div className="grid grid-cols-4 items-center gap-4">
+                        <Label htmlFor="edit-position" className="text-right">
+                          Posición
+                        </Label>
+                        <Input
+                          id="edit-position"
+                          value={editingEmployee?.position || ""}
+                          onChange={(e) =>
+                            setEditingEmployee(
+                              editingEmployee
+                                ? {
+                                    ...editingEmployee,
+                                    position: e.target.value,
+                                  }
+                                : null
+                            )
+                          }
+                          className="col-span-3"
+                        />
+                      </div>
+                      <div className="grid grid-cols-4 items-center gap-4">
+                        <Label htmlFor="edit-salary" className="text-right">
+                          Salario
+                        </Label>
+                        <Input
+                          id="edit-salary"
+                          type="number"
+                          value={editingEmployee?.salary || 0}
+                          onChange={(e) =>
+                            setEditingEmployee(
+                              editingEmployee
+                                ? {
+                                    ...editingEmployee,
+                                    salary: Number(e.target.value),
+                                  }
+                                : null
+                            )
+                          }
+                          className="col-span-3"
+                        />
+                      </div>
+                    </div>
+                    <Button onClick={updateEmployee}>Actualizar Empleado</Button>
+                  </DialogContent>
+                </Dialog>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={() => deleteEmployee(employee.id)}
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
     </div>
-  );
+  )
 }
