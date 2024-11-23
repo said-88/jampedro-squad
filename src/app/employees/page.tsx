@@ -27,10 +27,21 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 interface Employee {
   id: number;
   name: string;
+  lastName: string;
   code: string;
   age: number;
   address: string;
@@ -44,7 +55,8 @@ export default function EmployeesPage() {
   const [employees, setEmployees] = useState<Employee[]>([
     {
       id: 1,
-      name: 'John Doe',
+      name: 'John',
+      lastName: 'Doe',
       code: 'EMP001',
       age: 30,
       address: '123 Main St',
@@ -55,7 +67,8 @@ export default function EmployeesPage() {
     },
     {
       id: 2,
-      name: 'Jane Smith',
+      name: 'Jane',
+      lastName: 'Smith',
       code: 'EMP002',
       age: 28,
       address: '456 Elm St',
@@ -73,9 +86,24 @@ export default function EmployeesPage() {
     reset,
   } = useForm<Omit<Employee, 'id'>>();
 
-  const onSubmit = (data: Omit<Employee, 'id'>) => {
-    setEmployees([...employees, { ...data, id: employees.length + 1 }]);
-    reset();
+  const [searchTerm, setSearchTerm] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [deleteId, setDeleteId] = useState<number | null>(null);
+
+  const filteredEmployees = employees.filter((employee) =>
+    `${employee.name} ${employee.lastName} ${employee.code}`
+      .toLowerCase()
+      .includes(searchTerm.toLowerCase())
+  );
+
+  const onSubmit = async (data: Omit<Employee, 'id'>) => {
+    setLoading(true);
+    try {
+      setEmployees([...employees, { ...data, id: employees.length + 1 }]);
+      reset();
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleDelete = (id: number) => {
@@ -84,27 +112,27 @@ export default function EmployeesPage() {
 
   return (
     <MainLayout>
-      <div className="container mx-auto py-10">
-        <Card className="mb-8">
-          <CardHeader>
+      <div className="container mx-auto py-10 space-y-8">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between">
             <CardTitle>Gestión de Empleados</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="relative">
+            <div className="w-72">
               <Input
                 type="text"
                 placeholder="Buscar empleados..."
-                className="max-w-sm"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full"
               />
             </div>
-          </CardContent>
+          </CardHeader>
         </Card>
 
-        <div className="rounded-md border">
+        <div className="rounded-md border shadow-sm">
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Nombre</TableHead>
+                <TableHead>Nombre Completo</TableHead>
                 <TableHead>Código</TableHead>
                 <TableHead>Edad</TableHead>
                 <TableHead>Dirección</TableHead>
@@ -116,9 +144,11 @@ export default function EmployeesPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {employees.map((employee) => (
+              {filteredEmployees.map((employee) => (
                 <TableRow key={employee.id}>
-                  <TableCell>{employee.name}</TableCell>
+                  <TableCell className="font-medium">
+                    {`${employee.name} ${employee.lastName}`}
+                  </TableCell>
                   <TableCell>{employee.code}</TableCell>
                   <TableCell>{employee.age}</TableCell>
                   <TableCell>{employee.address}</TableCell>
@@ -126,40 +156,54 @@ export default function EmployeesPage() {
                   <TableCell>{employee.workEmail}</TableCell>
                   <TableCell>{employee.paymentMethod}</TableCell>
                   <TableCell>{employee.salaryType}</TableCell>
-                  <TableCell>
+                  <TableCell className="flex gap-2">
                     <Button
                       variant="ghost"
-                      className="mr-2"
+                      className="hover:bg-slate-100"
                       onClick={() => console.log('Edit', employee.id)}
                     >
                       Editar
                     </Button>
                     <Button
                       variant="destructive"
-                      onClick={() => handleDelete(employee.id)}
+                      onClick={() => setDeleteId(employee.id)}
                     >
                       Eliminar
                     </Button>
                   </TableCell>
                 </TableRow>
               ))}
+              {filteredEmployees.length === 0 && (
+                <TableRow>
+                  <TableCell colSpan={9} className="text-center py-10 text-muted-foreground">
+                    No se encontraron empleados
+                  </TableCell>
+                </TableRow>
+              )}
             </TableBody>
           </Table>
         </div>
 
-        <Card className="mt-8">
+        <Card>
           <CardHeader>
             <CardTitle>Agregar Nuevo Empleado</CardTitle>
           </CardHeader>
           <CardContent>
-            <form
-              onSubmit={handleSubmit(onSubmit)}
-              className="grid grid-cols-1 gap-6 md:grid-cols-2"
-            >
+            <form onSubmit={handleSubmit(onSubmit)} className="grid grid-cols-1 gap-6 md:grid-cols-2">
               <div className="space-y-2">
                 <Label htmlFor="name">Nombre</Label>
                 <Input id="name" {...register('name', { required: true })} />
                 {errors.name && (
+                  <p className="text-sm text-red-500">
+                    Este campo es requerido
+                  </p>
+                )}
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="lastName">Apellido</Label>
+                <Input id="lastName" {...register('lastName', { required: true })} />
+                {errors.lastName && (
                   <p className="text-sm text-red-500">
                     Este campo es requerido
                   </p>
@@ -239,7 +283,7 @@ export default function EmployeesPage() {
 
               <div className="space-y-2">
                 <Label htmlFor="paymentMethod">Método de Pago</Label>
-                <Select>
+                <Select {...register('paymentMethod', { required: true })}>
                   <SelectTrigger>
                     <SelectValue placeholder="Seleccionar método de pago" />
                   </SelectTrigger>
@@ -247,6 +291,9 @@ export default function EmployeesPage() {
                     <SelectItem value="Banco">Banco</SelectItem>
                     <SelectItem value="Transferencia Internacional">
                       Transferencia Internacional
+                    </SelectItem>
+                    <SelectItem value="Plataforma Internacional">
+                      Plataforma Internacional
                     </SelectItem>
                   </SelectContent>
                 </Select>
@@ -276,13 +323,35 @@ export default function EmployeesPage() {
               </div>
 
               <div className="col-span-2">
-                <Button type="submit" className="w-full">
-                  Agregar Empleado
+                <Button type="submit" className="w-full" disabled={loading}>
+                  {loading ? "Agregando..." : "Agregar Empleado"}
                 </Button>
               </div>
             </form>
           </CardContent>
         </Card>
+
+        <AlertDialog open={!!deleteId} onOpenChange={() => setDeleteId(null)}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>¿Está seguro?</AlertDialogTitle>
+              <AlertDialogDescription>
+                Esta acción no se puede deshacer. Esto eliminará permanentemente al empleado.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancelar</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={() => {
+                  handleDelete(deleteId!);
+                  setDeleteId(null);
+                }}
+              >
+                Eliminar
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
     </MainLayout>
   );

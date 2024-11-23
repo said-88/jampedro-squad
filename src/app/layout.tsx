@@ -4,7 +4,7 @@ import { Inter } from 'next/font/google'
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata = {
-  title: 'PayrollPro - Payroll Management System',
+  title: 'HonduPay - Payroll Management System',
   description: 'A comprehensive payroll management system',
 }
 
