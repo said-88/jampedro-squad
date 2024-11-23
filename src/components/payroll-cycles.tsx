@@ -126,25 +126,25 @@ const PayrollCycles: React.FC = () => {
           <form onSubmit={handleSubmit(onSubmit)} className="grid grid-cols-1 gap-6 mt-4 sm:grid-cols-2">
             <div>
               <label className="text-gray-700 dark:text-gray-200" htmlFor="name">Cycle Name</label>
-              <input {...register("name", { required: true })} id="name" type="text" className="block w-full px-4 py-2 mt-2 text-gray-700 bg-white border border-slate-200 border-gray-200 rounded-md dark:bg-gray-800 dark:text-gray-300 dark:border-gray-600 focus:border-blue-400 focus:ring-blue-300 focus:ring-opacity-40 dark:focus:border-blue-300 focus:outline-none focus:ring dark:border-slate-800" />
+              <input {...register("name", { required: true })} id="name" type="text" className="block w-full px-4 py-2 mt-2 text-gray-700 bg-white border border-slate-200 rounded-md dark:bg-gray-800 dark:text-gray-300 focus:border-blue-400 focus:ring-blue-300 focus:ring-opacity-40 dark:focus:border-blue-300 focus:outline-none focus:ring dark:border-slate-800" />
               {errors.name && <span className="text-red-500">This field is required</span>}
             </div>
 
             <div>
               <label className="text-gray-700 dark:text-gray-200" htmlFor="startDate">Start Date</label>
-              <input {...register("startDate", { required: true })} id="startDate" type="date" className="block w-full px-4 py-2 mt-2 text-gray-700 bg-white border border-slate-200 border-gray-200 rounded-md dark:bg-gray-800 dark:text-gray-300 dark:border-gray-600 focus:border-blue-400 focus:ring-blue-300 focus:ring-opacity-40 dark:focus:border-blue-300 focus:outline-none focus:ring dark:border-slate-800" />
+              <input {...register("startDate", { required: true })} id="startDate" type="date" className="block w-full px-4 py-2 mt-2 text-gray-700 bg-white border border-gray-200 rounded-md dark:bg-gray-800 dark:text-gray-300 dark:border-gray-600 focus:border-blue-400 focus:ring-blue-300 focus:ring-opacity-40 dark:focus:border-blue-300 focus:outline-none focus:ring" />
               {errors.startDate && <span className="text-red-500">This field is required</span>}
             </div>
 
             <div>
               <label className="text-gray-700 dark:text-gray-200" htmlFor="endDate">End Date</label>
-              <input {...register("endDate", { required: true })} id="endDate" type="date" className="block w-full px-4 py-2 mt-2 text-gray-700 bg-white border border-slate-200 border-gray-200 rounded-md dark:bg-gray-800 dark:text-gray-300 dark:border-gray-600 focus:border-blue-400 focus:ring-blue-300 focus:ring-opacity-40 dark:focus:border-blue-300 focus:outline-none focus:ring dark:border-slate-800" />
+              <input {...register("endDate", { required: true })} id="endDate" type="date" className="block w-full px-4 py-2 mt-2 text-gray-700 bg-white border border-slate-200 rounded-md dark:bg-gray-800 dark:text-gray-300 focus:border-blue-400 focus:ring-blue-300 focus:ring-opacity-40 dark:focus:border-blue-300 focus:outline-none focus:ring dark:border-slate-800" />
               {errors.endDate && <span className="text-red-500">This field is required</span>}
             </div>
 
             <div>
               <label className="text-gray-700 dark:text-gray-200" htmlFor="type">Type</label>
-              <select {...register("type", { required: true })} id="type" className="block w-full px-4 py-2 mt-2 text-gray-700 bg-white border border-slate-200 border-gray-200 rounded-md dark:bg-gray-800 dark:text-gray-300 dark:border-gray-600 focus:border-blue-400 focus:ring-blue-300 focus:ring-opacity-40 dark:focus:border-blue-300 focus:outline-none focus:ring dark:border-slate-800">
+              <select {...register("type", { required: true })} id="type" className="block w-full px-4 py-2 mt-2 text-gray-700 bg-white border border-slate-200 rounded-md dark:bg-gray-800 dark:text-gray-300 dark:border-gray-600 focus:border-blue-400 focus:ring-blue-300 focus:ring-opacity-40 dark:focus:border-blue-300 focus:outline-none focus:ring">
                 <option value="">Select Type</option>
                 <option value="Monthly">Monthly</option>
                 <option value="Biweekly">Biweekly</option>
