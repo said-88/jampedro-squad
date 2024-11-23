@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { useForm } from 'react-hook-form';
+import { useForm, Controller } from 'react-hook-form';
 import MainLayout from '@/components/layout/MainLayout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -21,12 +21,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -36,7 +31,9 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
+} from '@/components/ui/alert-dialog';
+import { supabase } from '@/lib/supabaseClient';
+import { useToast } from '@/hooks/use-toast';
 
 interface Employee {
   id: number;
@@ -82,6 +79,7 @@ export default function EmployeesPage() {
   const {
     register,
     handleSubmit,
+    control,
     formState: { errors },
     reset,
   } = useForm<Omit<Employee, 'id'>>();
@@ -89,6 +87,7 @@ export default function EmployeesPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState(false);
   const [deleteId, setDeleteId] = useState<number | null>(null);
+  const { toast } = useToast();
 
   const filteredEmployees = employees.filter((employee) =>
     `${employee.name} ${employee.lastName} ${employee.code}`
@@ -99,8 +98,61 @@ export default function EmployeesPage() {
   const onSubmit = async (data: Omit<Employee, 'id'>) => {
     setLoading(true);
     try {
-      setEmployees([...employees, { ...data, id: employees.length + 1 }]);
+      const { data: newEmployee, error } = await supabase
+        .from('employees')
+        .insert([
+          {
+            name: data.name,
+            last_name: data.lastName,
+            code: data.code,
+            age: data.age,
+            address: data.address,
+            personal_email: data.personalEmail,
+            work_email: data.workEmail,
+            payment_method: data.paymentMethod,
+            salary_type: data.salaryType,
+          },
+        ])
+        .select()
+        .single();
+
+      if (error) {
+        toast({
+          variant: 'destructive',
+          title: 'Error',
+          description: 'No se pudo agregar el empleado. ' + error.message,
+        });
+        return;
+      }
+
+      setEmployees([
+        ...employees,
+        {
+          id: newEmployee.id,
+          name: newEmployee.name,
+          lastName: newEmployee.last_name,
+          code: newEmployee.code,
+          age: newEmployee.age,
+          address: newEmployee.address,
+          personalEmail: newEmployee.personal_email,
+          workEmail: newEmployee.work_email,
+          paymentMethod: newEmployee.payment_method,
+          salaryType: newEmployee.salary_type,
+        },
+      ]);
+
+      toast({
+        title: 'Éxito',
+        description: 'Empleado agregado correctamente',
+      });
+
       reset();
+    } catch (error) {
+      toast({
+        variant: 'destructive',
+        title: 'Error',
+        description: `Ocurrió un error inesperado ${(error as Error).message}`,
+      });
     } finally {
       setLoading(false);
     }
@@ -145,40 +197,10 @@ export default function EmployeesPage() {
             </TableHeader>
             <TableBody>
               {filteredEmployees.map((employee) => (
-                <TableRow key={employee.id}>
-                  <TableCell className="font-medium">
-                    {`${employee.name} ${employee.lastName}`}
-                  </TableCell>
-                  <TableCell>{employee.code}</TableCell>
-                  <TableCell>{employee.age}</TableCell>
-                  <TableCell>{employee.address}</TableCell>
-                  <TableCell>{employee.personalEmail}</TableCell>
-                  <TableCell>{employee.workEmail}</TableCell>
-                  <TableCell>{employee.paymentMethod}</TableCell>
-                  <TableCell>{employee.salaryType}</TableCell>
-                  <TableCell className="flex gap-2">
-                    <Button
-                      variant="ghost"
-                      className="hover:bg-slate-100"
-                      onClick={() => console.log('Edit', employee.id)}
-                    >
-                      Editar
-                    </Button>
-                    <Button
-                      variant="destructive"
-                      onClick={() => setDeleteId(employee.id)}
-                    >
-                      Eliminar
-                    </Button>
-                  </TableCell>
-                </TableRow>
+                <TableRow key={`${employee.id}-${employee.code}`}><TableCell className="font-medium">{`${employee.name} ${employee.lastName}`}</TableCell><TableCell>{employee.code}</TableCell><TableCell>{employee.age}</TableCell><TableCell>{employee.address}</TableCell><TableCell>{employee.personalEmail}</TableCell><TableCell>{employee.workEmail}</TableCell><TableCell>{employee.paymentMethod}</TableCell><TableCell>{employee.salaryType}</TableCell><TableCell className="flex gap-2"><Button variant="ghost" className="hover:bg-slate-100" onClick={() => console.log('Edit', employee.id)}>Editar</Button><Button variant="destructive" onClick={() => setDeleteId(employee.id)}>Eliminar</Button></TableCell></TableRow>
               ))}
               {filteredEmployees.length === 0 && (
-                <TableRow>
-                  <TableCell colSpan={9} className="text-center py-10 text-muted-foreground">
-                    No se encontraron empleados
-                  </TableCell>
-                </TableRow>
+                <TableRow><TableCell colSpan={9} className="text-center py-10 text-muted-foreground">No se encontraron empleados</TableCell></TableRow>
               )}
             </TableBody>
           </Table>
@@ -189,7 +211,10 @@ export default function EmployeesPage() {
             <CardTitle>Agregar Nuevo Empleado</CardTitle>
           </CardHeader>
           <CardContent>
-            <form onSubmit={handleSubmit(onSubmit)} className="grid grid-cols-1 gap-6 md:grid-cols-2">
+            <form
+              onSubmit={handleSubmit(onSubmit)}
+              className="grid grid-cols-1 gap-6 md:grid-cols-2"
+            >
               <div className="space-y-2">
                 <Label htmlFor="name">Nombre</Label>
                 <Input id="name" {...register('name', { required: true })} />
@@ -202,7 +227,10 @@ export default function EmployeesPage() {
 
               <div className="space-y-2">
                 <Label htmlFor="lastName">Apellido</Label>
-                <Input id="lastName" {...register('lastName', { required: true })} />
+                <Input
+                  id="lastName"
+                  {...register('lastName', { required: true })}
+                />
                 {errors.lastName && (
                   <p className="text-sm text-red-500">
                     Este campo es requerido
@@ -283,20 +311,31 @@ export default function EmployeesPage() {
 
               <div className="space-y-2">
                 <Label htmlFor="paymentMethod">Método de Pago</Label>
-                <Select {...register('paymentMethod', { required: true })}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Seleccionar método de pago" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Banco">Banco</SelectItem>
-                    <SelectItem value="Transferencia Internacional">
-                      Transferencia Internacional
-                    </SelectItem>
-                    <SelectItem value="Plataforma Internacional">
-                      Plataforma Internacional
-                    </SelectItem>
-                  </SelectContent>
-                </Select>
+                <Controller
+                  control={control}
+                  name="paymentMethod"
+                  rules={{ required: true }}
+                  render={({ field }) => (
+                    <Select
+                      onValueChange={field.onChange}
+                      value={field.value}
+                      defaultValue=""
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Seleccionar método de pago" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Banco">Banco</SelectItem>
+                        <SelectItem value="Transferencia Internacional">
+                          Transferencia Internacional
+                        </SelectItem>
+                        <SelectItem value="Plataforma Internacional">
+                          Plataforma Internacional
+                        </SelectItem>
+                      </SelectContent>
+                    </Select>
+                  )}
+                />
                 {errors.paymentMethod && (
                   <p className="text-sm text-red-500">
                     Este campo es requerido
@@ -306,15 +345,26 @@ export default function EmployeesPage() {
 
               <div className="space-y-2">
                 <Label htmlFor="salaryType">Tipo de Salario</Label>
-                <Select>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Seleccionar tipo de salario" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Mensual">Mensual</SelectItem>
-                    <SelectItem value="Por Hora">Por Hora</SelectItem>
-                  </SelectContent>
-                </Select>
+                <Controller
+                  control={control}
+                  name="salaryType"
+                  rules={{ required: true }}
+                  render={({ field }) => (
+                    <Select
+                      onValueChange={field.onChange}
+                      value={field.value}
+                      defaultValue=""
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Seleccionar tipo de salario" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Mensual">Mensual</SelectItem>
+                        <SelectItem value="Por Hora">Por Hora</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  )}
+                />
                 {errors.salaryType && (
                   <p className="text-sm text-red-500">
                     Este campo es requerido
@@ -324,7 +374,7 @@ export default function EmployeesPage() {
 
               <div className="col-span-2">
                 <Button type="submit" className="w-full" disabled={loading}>
-                  {loading ? "Agregando..." : "Agregar Empleado"}
+                  {loading ? 'Agregando...' : 'Agregar Empleado'}
                 </Button>
               </div>
             </form>
@@ -336,7 +386,8 @@ export default function EmployeesPage() {
             <AlertDialogHeader>
               <AlertDialogTitle>¿Está seguro?</AlertDialogTitle>
               <AlertDialogDescription>
-                Esta acción no se puede deshacer. Esto eliminará permanentemente al empleado.
+                Esta acción no se puede deshacer. Esto eliminará permanentemente
+                al empleado.
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
