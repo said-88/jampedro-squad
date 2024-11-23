@@ -145,43 +145,43 @@ const EmployeeManagement: React.FC = () => {
           <form onSubmit={handleSubmit(onSubmit)} className="grid grid-cols-1 gap-6 mt-4 sm:grid-cols-2">
             <div>
               <label className="text-gray-700 dark:text-gray-200" htmlFor="name">Name</label>
-              <input {...register("name", { required: true })} id="name" type="text" className="block w-full px-4 py-2 mt-2 text-gray-700 bg-white border border-slate-200 border-gray-200 rounded-md dark:bg-gray-800 dark:text-gray-300 dark:border-gray-600 focus:border-blue-400 focus:ring-blue-300 focus:ring-opacity-40 dark:focus:border-blue-300 focus:outline-none focus:ring dark:border-slate-800" />
+              <input {...register("name", { required: true })} id="name" type="text" className="block w-full px-4 py-2 mt-2 text-gray-700 bg-white border border-slate-200 rounded-md dark:bg-gray-800 dark:text-gray-300 focus:border-blue-400 focus:ring-blue-300 focus:ring-opacity-40 dark:focus:border-blue-300 focus:outline-none focus:ring dark:border-slate-800" />
               {errors.name && <span className="text-red-500">This field is required</span>}
             </div>
 
             <div>
               <label className="text-gray-700 dark:text-gray-200" htmlFor="code">Employee Code</label>
-              <input {...register("code", { required: true })} id="code" type="text" className="block w-full px-4 py-2 mt-2 text-gray-700 bg-white border border-slate-200 border-gray-200 rounded-md dark:bg-gray-800 dark:text-gray-300 dark:border-gray-600 focus:border-blue-400 focus:ring-blue-300 focus:ring-opacity-40 dark:focus:border-blue-300 focus:outline-none focus:ring dark:border-slate-800" />
+              <input {...register("code", { required: true })} id="code" type="text" className="block w-full px-4 py-2 mt-2 text-gray-700 bg-white border border-slate-200 rounded-md dark:bg-gray-800 dark:text-gray-300 focus:border-blue-400 focus:ring-blue-300 focus:ring-opacity-40 dark:focus:border-blue-300 focus:outline-none focus:ring dark:border-slate-800" />
               {errors.code && <span className="text-red-500">This field is required</span>}
             </div>
 
             <div>
               <label className="text-gray-700 dark:text-gray-200" htmlFor="age">Age</label>
-              <input {...register("age", { required: true, min: 18, max: 100 })} id="age" type="number" className="block w-full px-4 py-2 mt-2 text-gray-700 bg-white border border-slate-200 border-gray-200 rounded-md dark:bg-gray-800 dark:text-gray-300 dark:border-gray-600 focus:border-blue-400 focus:ring-blue-300 focus:ring-opacity-40 dark:focus:border-blue-300 focus:outline-none focus:ring dark:border-slate-800" />
+              <input {...register("age", { required: true, min: 18, max: 100 })} id="age" type="number" className="block w-full px-4 py-2 mt-2 text-gray-700 bg-white border border-slate-200 rounded-md dark:bg-gray-800 dark:text-gray-300 focus:border-blue-400 focus:ring-blue-300 focus:ring-opacity-40 dark:focus:border-blue-300 focus:outline-none focus:ring dark:border-slate-800" />
               {errors.age && <span className="text-red-500">Age must be between 18 and 100</span>}
             </div>
 
             <div>
               <label className="text-gray-700 dark:text-gray-200" htmlFor="address">Address</label>
-              <input {...register("address", { required: true })} id="address" type="text" className="block w-full px-4 py-2 mt-2 text-gray-700 bg-white border border-slate-200 border-gray-200 rounded-md dark:bg-gray-800 dark:text-gray-300 dark:border-gray-600 focus:border-blue-400 focus:ring-blue-300 focus:ring-opacity-40 dark:focus:border-blue-300 focus:outline-none focus:ring dark:border-slate-800" />
+              <input {...register("address", { required: true })} id="address" type="text" className="block w-full px-4 py-2 mt-2 text-gray-700 bg-white border border-gray-200 rounded-md dark:bg-gray-800 dark:text-gray-300 dark:border-gray-600 focus:border-blue-400 focus:ring-blue-300 focus:ring-opacity-40 dark:focus:border-blue-300 focus:outline-none focus:ring" />
               {errors.address && <span className="text-red-500">This field is required</span>}
             </div>
 
             <div>
               <label className="text-gray-700 dark:text-gray-200" htmlFor="personalEmail">Personal Email</label>
-              <input {...register("personalEmail", { required: true, pattern: /^\S+@\S+$/i })} id="personalEmail" type="email" className="block w-full px-4 py-2 mt-2 text-gray-700 bg-white border border-slate-200 border-gray-200 rounded-md dark:bg-gray-800 dark:text-gray-300 dark:border-gray-600 focus:border-blue-400 focus:ring-blue-300 focus:ring-opacity-40 dark:focus:border-blue-300 focus:outline-none focus:ring dark:border-slate-800" />
+              <input {...register("personalEmail", { required: true, pattern: /^\S+@\S+$/i })} id="personalEmail" type="email" className="block w-full px-4 py-2 mt-2 text-gray-700 bg-white border border-gray-200 rounded-md dark:bg-gray-800 dark:text-gray-300 focus:border-blue-400 focus:ring-blue-300 focus:ring-opacity-40 dark:focus:border-blue-300 focus:outline-none focus:ring dark:border-slate-800" />
               {errors.personalEmail && <span className="text-red-500">Please enter a valid email</span>}
             </div>
 
             <div>
               <label className="text-gray-700 dark:text-gray-200" htmlFor="workEmail">Work Email</label>
-              <input {...register("workEmail", { required: true, pattern: /^\S+@\S+$/i })} id="workEmail" type="email" className="block w-full px-4 py-2 mt-2 text-gray-700 bg-white border border-slate-200 border-gray-200 rounded-md dark:bg-gray-800 dark:text-gray-300 dark:border-gray-600 focus:border-blue-400 focus:ring-blue-300 focus:ring-opacity-40 dark:focus:border-blue-300 focus:outline-none focus:ring dark:border-slate-800" />
+              <input {...register("workEmail", { required: true, pattern: /^\S+@\S+$/i })} id="workEmail" type="email" className="block w-full px-4 py-2 mt-2 text-gray-700 bg-white border border-gray-200 rounded-md dark:bg-gray-800 dark:text-gray-300 focus:border-blue-400 focus:ring-blue-300 focus:ring-opacity-40 dark:focus:border-blue-300 focus:outline-none focus:ring dark:border-slate-800" />
               {errors.workEmail && <span className="text-red-500">Please enter a valid email</span>}
             </div>
 
             <div>
               <label className="text-gray-700 dark:text-gray-200" htmlFor="paymentMethod">Payment Method</label>
-              <select {...register("paymentMethod", { required: true })} id="paymentMethod" className="block w-full px-4 py-2 mt-2 text-gray-700 bg-white border border-slate-200 border-gray-200 rounded-md dark:bg-gray-800 dark:text-gray-300 dark:border-gray-600 focus:border-blue-400 focus:ring-blue-300 focus:ring-opacity-40 dark:focus:border-blue-300 focus:outline-none focus:ring dark:border-slate-800">
+              <select {...register("paymentMethod", { required: true })} id="paymentMethod" className="block w-full px-4 py-2 mt-2 text-gray-700 bg-white border border-slate-200 rounded-md dark:bg-gray-800 dark:text-gray-300 focus:border-blue-400 focus:ring-blue-300 focus:ring-opacity-40 dark:focus:border-blue-300 focus:outline-none focus:ring dark:border-slate-800">
                 <option value="">Select Payment Method</option>
                 <option value="Bank">Bank</option>
                 <option value="International Transfer">International Transfer</option>
@@ -191,7 +191,7 @@ const EmployeeManagement: React.FC = () => {
 
             <div>
               <label className="text-gray-700 dark:text-gray-200" htmlFor="salaryType">Salary Type</label>
-              <select {...register("salaryType", { required: true })} id="salaryType" className="block w-full px-4 py-2 mt-2 text-gray-700 bg-white border border-slate-200 border-gray-200 rounded-md dark:bg-gray-800 dark:text-gray-300 dark:border-gray-600 focus:border-blue-400 focus:ring-blue-300 focus:ring-opacity-40 dark:focus:border-blue-300 focus:outline-none focus:ring dark:border-slate-800">
+              <select {...register("salaryType", { required: true })} id="salaryType" className="block w-full px-4 py-2 mt-2 text-gray-700 bg-white border border-gray-200 rounded-md dark:bg-gray-800 dark:text-gray-300 focus:border-blue-400 focus:ring-blue-300 focus:ring-opacity-40 dark:focus:border-blue-300 focus:outline-none focus:ring dark:border-slate-800">
                 <option value="">Select Salary Type</option>
                 <option value="Hourly">Hourly</option>
                 <option value="Monthly">Monthly</option>

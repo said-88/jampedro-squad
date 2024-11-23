@@ -60,7 +60,7 @@ const HoursInput: React.FC = () => {
                   type="number"
                   id="normalHours"
                   {...register("normalHours", { required: true, min: 0 })}
-                  className="mt-1 block w-full border border-slate-200 border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm dark:border-slate-800"
+                  className="mt-1 block w-full border border-slate-200 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm dark:border-slate-800"
                 />
                 {errors.normalHours && <span className="text-red-500 text-xs">Please enter a valid number of hours</span>}
               </div>
@@ -73,7 +73,7 @@ const HoursInput: React.FC = () => {
                   type="number"
                   id="overtimeHours"
                   {...register("overtimeHours", { required: true, min: 0 })}
-                  className="mt-1 block w-full border border-slate-200 border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm dark:border-slate-800"
+                  className="mt-1 block w-full border border-slate-200 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm dark:border-slate-800"
                 />
                 {errors.overtimeHours && <span className="text-red-500 text-xs">Please enter a valid number of hours</span>}
               </div>
