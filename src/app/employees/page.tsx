@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import MainLayout from '@/components/layout/MainLayout';
 import { Button } from '@/components/ui/button';
@@ -32,61 +32,30 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { supabase } from '@/lib/supabaseClient';
 import { useToast } from '@/hooks/use-toast';
+import { createEmployee, deleteEmployee, getEmployees, updateEmployee, EmployeeData } from '@/services/employeeService';
 
-interface Employee {
+interface Employee extends EmployeeData {
   id: number;
-  name: string;
-  lastName: string;
-  code: string;
-  age: number;
-  address: string;
-  personalEmail: string;
-  workEmail: string;
-  paymentMethod: string;
-  salaryType: string;
 }
 
 export default function EmployeesPage() {
-  const [employees, setEmployees] = useState<Employee[]>([
-    {
-      id: 1,
-      name: 'John',
-      lastName: 'Doe',
-      code: 'EMP001',
-      age: 30,
-      address: '123 Main St',
-      personalEmail: 'john@personal.com',
-      workEmail: 'john@work.com',
-      paymentMethod: 'Banco',
-      salaryType: 'Mensual',
-    },
-    {
-      id: 2,
-      name: 'Jane',
-      lastName: 'Smith',
-      code: 'EMP002',
-      age: 28,
-      address: '456 Elm St',
-      personalEmail: 'jane@personal.com',
-      workEmail: 'jane@work.com',
-      paymentMethod: 'Transferencia Internacional',
-      salaryType: 'Por Hora',
-    },
-  ]);
-
+  const [employees, setEmployees] = useState<Employee[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [editingEmployee, setEditingEmployee] = useState<Employee | null>(null);
   const {
     register,
     handleSubmit,
     control,
     formState: { errors },
     reset,
+    setValue
   } = useForm<Omit<Employee, 'id'>>();
 
   const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState(false);
   const [deleteId, setDeleteId] = useState<number | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
   const { toast } = useToast();
 
   const filteredEmployees = employees.filter((employee) =>
@@ -95,57 +64,61 @@ export default function EmployeesPage() {
       .includes(searchTerm.toLowerCase())
   );
 
-  const onSubmit = async (data: Omit<Employee, 'id'>) => {
-    setLoading(true);
-    try {
-      const { data: newEmployee, error } = await supabase
-        .from('employees')
-        .insert([
-          {
-            name: data.name,
-            last_name: data.lastName,
-            code: data.code,
-            age: data.age,
-            address: data.address,
-            personal_email: data.personalEmail,
-            work_email: data.workEmail,
-            payment_method: data.paymentMethod,
-            salary_type: data.salaryType,
-          },
-        ])
-        .select()
-        .single();
-
-      if (error) {
+  useEffect(() => {
+    const loadEmployees = async () => {
+      try {
+        const data = await getEmployees();
+        setEmployees(data);
+      } catch (error) {
         toast({
           variant: 'destructive',
           title: 'Error',
-          description: 'No se pudo agregar el empleado. ' + error.message,
+          description: `Error al cargar empleados: ${(error as Error).message}`,
         });
-        return;
+      } finally {
+        setIsLoading(false);
       }
+    };
 
-      setEmployees([
-        ...employees,
-        {
-          id: newEmployee.id,
-          name: newEmployee.name,
-          lastName: newEmployee.last_name,
-          code: newEmployee.code,
-          age: newEmployee.age,
-          address: newEmployee.address,
-          personalEmail: newEmployee.personal_email,
-          workEmail: newEmployee.work_email,
-          paymentMethod: newEmployee.payment_method,
-          salaryType: newEmployee.salary_type,
-        },
-      ]);
+    loadEmployees();
+  });
 
-      toast({
-        title: 'Éxito',
-        description: 'Empleado agregado correctamente',
-      });
+  useEffect(() => {
+    if (editingEmployee) {
+      setValue('name', editingEmployee.name);
+      setValue('lastName', editingEmployee.lastName);
+      setValue('code', editingEmployee.code);
+      setValue('age', editingEmployee.age);
+      setValue('address', editingEmployee.address);
+      setValue('personalEmail', editingEmployee.personalEmail);
+      setValue('workEmail', editingEmployee.workEmail);
+      setValue('paymentMethod', editingEmployee.paymentMethod);
+      setValue('salaryType', editingEmployee.salaryType);
+    }
+  }, [editingEmployee, setValue]);
 
+  const onSubmit = async (data: EmployeeData) => {
+    setLoading(true);
+    try {
+      if (editingEmployee) {
+        const updatedEmployee = await updateEmployee(editingEmployee.id, data);
+        setEmployees(employees.map(emp => 
+          emp.id === editingEmployee.id ? updatedEmployee : emp
+        ));
+        toast({
+          title: 'Éxito',
+          description: 'Empleado actualizado correctamente',
+        });
+        setEditingEmployee(null);
+      } else {
+        const newEmployee = await createEmployee(data);
+        setEmployees([...employees, newEmployee]);
+        
+        toast({
+          title: 'Éxito',
+          description: 'Empleado agregado correctamente',
+        });
+      }
       reset();
     } catch (error) {
       toast({
@@ -158,8 +131,25 @@ export default function EmployeesPage() {
     }
   };
 
-  const handleDelete = (id: number) => {
-    setEmployees(employees.filter((emp) => emp.id !== id));
+  const handleDelete = async (id: number) => {
+    setIsDeleting(true);
+    try {
+      await deleteEmployee(id);
+      setEmployees(employees.filter((emp) => emp.id !== id));
+      toast({
+        title: 'Éxito',
+        description: 'Empleado eliminado correctamente',
+      });
+    } catch (error) {
+      toast({
+        variant: 'destructive',
+        title: 'Error',
+        description: `${(error as Error).message}`,
+      });
+    } finally {
+      setIsDeleting(false);
+      setDeleteId(null);
+    }
   };
 
   return (
@@ -196,11 +186,22 @@ export default function EmployeesPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filteredEmployees.map((employee) => (
-                <TableRow key={`${employee.id}-${employee.code}`}><TableCell className="font-medium">{`${employee.name} ${employee.lastName}`}</TableCell><TableCell>{employee.code}</TableCell><TableCell>{employee.age}</TableCell><TableCell>{employee.address}</TableCell><TableCell>{employee.personalEmail}</TableCell><TableCell>{employee.workEmail}</TableCell><TableCell>{employee.paymentMethod}</TableCell><TableCell>{employee.salaryType}</TableCell><TableCell className="flex gap-2"><Button variant="ghost" className="hover:bg-slate-100" onClick={() => console.log('Edit', employee.id)}>Editar</Button><Button variant="destructive" onClick={() => setDeleteId(employee.id)}>Eliminar</Button></TableCell></TableRow>
-              ))}
-              {filteredEmployees.length === 0 && (
-                <TableRow><TableCell colSpan={9} className="text-center py-10 text-muted-foreground">No se encontraron empleados</TableCell></TableRow>
+              {isLoading ? (
+                <TableRow>
+                  <TableCell colSpan={9} className="text-center py-10">
+                    Cargando empleados...
+                  </TableCell>
+                </TableRow>
+              ) : filteredEmployees.length > 0 ? (
+                filteredEmployees.map((employee) => (
+                  <TableRow key={`${employee.id}-${employee.code}`}><TableCell className="font-medium">{`${employee.name} ${employee.lastName}`}</TableCell><TableCell>{employee.code}</TableCell><TableCell>{employee.age}</TableCell><TableCell>{employee.address}</TableCell><TableCell>{employee.personalEmail}</TableCell><TableCell>{employee.workEmail}</TableCell><TableCell>{employee.paymentMethod}</TableCell><TableCell>{employee.salaryType}</TableCell><TableCell className="flex gap-2"><Button variant="ghost" className="hover:bg-slate-100" onClick={() => setEditingEmployee(employee)}>Editar</Button><Button variant="destructive" onClick={() => setDeleteId(employee.id)}>Eliminar</Button></TableCell></TableRow>
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell colSpan={9} className="text-center py-10 text-muted-foreground">
+                    No se encontraron empleados
+                  </TableCell>
+                </TableRow>
               )}
             </TableBody>
           </Table>
@@ -208,7 +209,9 @@ export default function EmployeesPage() {
 
         <Card>
           <CardHeader>
-            <CardTitle>Agregar Nuevo Empleado</CardTitle>
+            <CardTitle>
+              {editingEmployee ? 'Editar Empleado' : 'Agregar Nuevo Empleado'}
+            </CardTitle>
           </CardHeader>
           <CardContent>
             <form
@@ -372,9 +375,23 @@ export default function EmployeesPage() {
                 )}
               </div>
 
-              <div className="col-span-2">
+              <div className="col-span-2 flex justify-end gap-4">
+                {editingEmployee && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => {
+                      setEditingEmployee(null);
+                      reset();
+                    }}
+                  >
+                    Cancelar
+                  </Button>
+                )}
                 <Button type="submit" className="w-full" disabled={loading}>
-                  {loading ? 'Agregando...' : 'Agregar Empleado'}
+                  {loading 
+                    ? (editingEmployee ? 'Actualizando...' : 'Agregando...') 
+                    : (editingEmployee ? 'Actualizar Empleado' : 'Agregar Empleado')}
                 </Button>
               </div>
             </form>
@@ -393,12 +410,10 @@ export default function EmployeesPage() {
             <AlertDialogFooter>
               <AlertDialogCancel>Cancelar</AlertDialogCancel>
               <AlertDialogAction
-                onClick={() => {
-                  handleDelete(deleteId!);
-                  setDeleteId(null);
-                }}
+                onClick={() => handleDelete(deleteId!)}
+                disabled={isDeleting}
               >
-                Eliminar
+                {isDeleting ? 'Eliminando...' : 'Eliminar'}
               </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>
